@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:screenOrientation="portrait" android:orientation="vertical"
+	android:layout_width="fill_parent" android:layout_height="wrap_content">
+	<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+		android:orientation="vertical" android:layout_width="fill_parent"
+		android:layout_height="fill_parent"
+		android:layout_alignWithParentIfMissing="true" android:layout_margin="0px">
+
+		<TextView android:id="@+id/TextView01" android:layout_height="wrap_content"
+			android:text="@string/scheduler_info" android:capitalize="none"
+			android:padding="10dp" android:layout_width="240px" />
+		<Spinner android:id="@+id/Spinner01" android:layout_below="@+id/TextView01"
+			android:layout_height="48dp" android:layout_width="192px" />
+		<Button android:layout_width="60px" android:layout_below="@+id/TextView01"
+			android:layout_marginLeft="180px" android:text="\?"
+			android:layout_height="46dp" android:id="@+id/shedHelpButton"
+			android:layout_marginTop="2px" />
+
+		<TextView android:id="@+id/TextView02"
+			android:layout_toRightOf="@+id/shedHelpButton" android:padding="10dp"
+			android:text="@string/limit_clock" android:layout_height="wrap_content"
+			android:layout_width="240px" />
+		<Spinner android:id="@+id/Spinner02" android:layout_below="@+id/TextView02"
+			android:layout_toRightOf="@+id/shedHelpButton" android:layout_height="48dp"
+			android:layout_margin="-10dp" android:layout_width="192px" />
+		<Button android:layout_width="60px" android:layout_below="@+id/TextView02"
+			android:layout_toRightOf="@+id/shedHelpButton" android:text="\?"
+			android:layout_height="46dp" android:layout_marginLeft="180px"
+			android:layout_marginTop="2px" android:id="@+id/freqHelpButton" />
+
+		<ExpandableListView android:id="@android:id/list"
+			android:layout_marginBottom="50px" android:layout_below="@+id/Spinner02"
+			android:layout_width="fill_parent" android:layout_height="wrap_content" />
+
+
+		<SlidingDrawer android:layout_alignParentBottom="true"
+			android:layout_width="fill_parent" android:id="@+id/SlidingDrawer"
+			android:handle="@+id/sliderlayout" android:content="@+id/contentLayout"
+			android:layout_height="wrap_content">
+			<LinearLayout android:id="@+id/sliderlayout"
+				android:gravity="bottom" android:focusable="true"
+				android:layout_width="fill_parent" android:layout_height="wrap_content">
+				<ImageView android:duplicateParentState="true"
+					android:layout_width="1.0dip" android:layout_height="wrap_content"
+					android:src="@drawable/tray_handle_strip" android:scaleType="fitXY"
+					android:layout_weight="1.0" />
+				<Button android:id="@+id/slideHandleButton"
+					android:textAppearance="?android:textAppearanceSmall"
+					android:background="@drawable/tray_handle_tab"
+					android:duplicateParentState="true" android:layout_width="wrap_content"
+					android:layout_height="wrap_content" android:text="States"
+					android:singleLine="true" android:shadowColor="#ffffffff"
+					android:shadowDy="1.0" android:shadowRadius="0.9" />
+				<ImageView android:duplicateParentState="true"
+					android:layout_width="1.0dip" android:layout_height="wrap_content"
+					android:src="@drawable/tray_handle_strip" android:scaleType="fitXY"
+					android:layout_weight="1.0" />
+			</LinearLayout>
+			
+			<RelativeLayout android:layout_width="wrap_content"
+				android:id="@+id/contentLayout" android:orientation="vertical"
+				android:gravity="center|top" android:padding="10dip"
+				android:background="#888" android:layout_height="wrap_content">
+				<TextView android:id="@+id/sliderHelpText" android:padding="10dp" 
+					android:text="@string/statesHelpText" android:layout_height="wrap_content" 
+					android:layout_width="480px" android:gravity="bottom"></TextView>
+			</RelativeLayout>
+		</SlidingDrawer>
+	</RelativeLayout>
+
+</LinearLayout>

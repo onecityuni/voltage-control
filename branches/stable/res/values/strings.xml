@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+    <string name="about_text">Voltage Control by xan @ xda-developers.com
+    Tweaking utility for OC kernels for Hummbingbird based Samsung Galaxy devices.
+    Seems to work on Galaxy S, 
+    Captivate, 
+    Epic4G,
+    Fascinate and
+    Vibrant.
+    Requires proper kernel installed!!
+     
+    For more info go to XDA.</string>
+    <string name="bkernel_text">You are running a incompatible kernel. To to get one head to XDA</string>
+    <string name="nosu_text">Your device is not rooted or you have not accepted superuser prompt. To accept launch it again. More information on XDA.</string>
+	<string name="limit_clock">Limit clock to:</string>
+	<string name="statesHelpText">Tick the frequencies you want to be used. I suggest preserving only 5-7 active states. Do not forget to set the clock limit accordingly.</string>
+	<string name="sched_help_header">What is a scheduler?</string>
+	<string name="sched_help_text">This item allows you to select a way to organize an I/O (input/output) queue. Suggested: noop (simplest, less overhead) or BFQ (CFQ if not supported in kernel). Doesn\'t seem to have large impact on performance. </string>
+	<string name="freq_help_header">Clock limit setting</string>
+	<string name="freq_help_text">This item allows you to limit max clock to specific value. The processor wont run faster, even with higher states selected.</string>
+	<string name="scheduler_info">Scheduler:</string>
+	<string name="set_values">Set values!</string>
+	<string name="mhz_voltage">Mhz voltage:</string>
+	<string name="hello">Voltage Control for SGS</string>
+	<string name="app_name">Voltage Control</string>
+	<string name="version">3.0-rc</string>
+</resources>
