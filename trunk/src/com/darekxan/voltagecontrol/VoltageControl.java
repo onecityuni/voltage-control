@@ -35,7 +35,6 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 public class VoltageControl extends ExpandableListActivity {
-	
 	// COMMAND STRINGS
 	protected static final String 	C_FREQUENCY_VOLTAGE_TABLE = "cat /sys/devices/system/cpu/cpu0/cpufreq/frequency_voltage_table";
 	protected static final String 	C_STATES_ENABLED = "cat /sys/devices/system/cpu/cpu0/cpufreq/states_enabled_table";
@@ -62,7 +61,7 @@ public class VoltageControl extends ExpandableListActivity {
 	private Menu mMenu;
 	private int sched_active = 0;
 	private String[] sched_table;
-	private Map<String, String> stock_voltages = new HashMap<String, String>();
+	Map<String, String> stock_voltages = new HashMap<String, String>();
 	private String time_in_state;
 	private String uv_values;
 
@@ -120,7 +119,7 @@ public class VoltageControl extends ExpandableListActivity {
 		});
 
 		frequencyAdapter = new FrequencyListAdapter(
-				this.getApplicationContext());
+				this, this.getApplicationContext());
 
 		final Handler uIRefreshHandler = new Handler() {
 
