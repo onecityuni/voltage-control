@@ -1,10 +1,14 @@
 package com.darekxan.voltagecontrol;
 
-import android.util.Log;
-
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import android.util.Log;
 
 /**
  * Interface to the Superuser shell on Android devices with some helper functions.<p/><p/>
@@ -95,14 +99,15 @@ public class ShellInterface {
     }
   }
 
-  public static boolean runCommand(String command) {
-    try {
-      _runCommand(command, OUTPUT.BOTH);
-      return true;
-    } catch (IOException ignored) {
-      return false;
+  public static void runCommand(String command)   {
+    
+      try {
+		_runCommand(command, OUTPUT.BOTH);
+	} catch (IOException ignored) {
+	}
+      
     }
-  }
+  
 
   private static String _runCommand(String command, OUTPUT o) throws IOException {
     DataOutputStream os = null;
