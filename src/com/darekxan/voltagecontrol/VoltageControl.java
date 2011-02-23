@@ -2,6 +2,9 @@ package com.darekxan.voltagecontrol;
 
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
 import android.app.AlertDialog;
 import android.app.ExpandableListActivity;
 import android.app.ProgressDialog;
@@ -33,107 +36,6 @@ import android.widget.Toast;
 
 public class VoltageControl extends ExpandableListActivity {
 	
-
-	public static class VoltageControlData {
-		private ExpandableListAdapter frequencyAdapter;
-		private String max_freq;
-		private int max_freq_id;
-		private String max_frequency;
-		private ArrayList<ProcessorFrequency> mFqList;
-		private Menu mMenu;
-		private int sched_active;
-		private String[] sched_table;
-		private String time_in_state;
-		private String uv_values;
-
-		public VoltageControlData(String max_frequency,
-				ArrayList<ProcessorFrequency> mFqList, int sched_active) {
-			this.max_frequency = max_frequency;
-			this.mFqList = mFqList;
-			this.sched_active = sched_active;
-		}
-
-		public ExpandableListAdapter getFrequencyAdapter() {
-			return frequencyAdapter;
-		}
-
-		public void setFrequencyAdapter(ExpandableListAdapter frequencyAdapter) {
-			this.frequencyAdapter = frequencyAdapter;
-		}
-
-		public String getMax_freq() {
-			return max_freq;
-		}
-
-		public void setMax_freq(String max_freq) {
-			this.max_freq = max_freq;
-		}
-
-		public int getMax_freq_id() {
-			return max_freq_id;
-		}
-
-		public void setMax_freq_id(int max_freq_id) {
-			this.max_freq_id = max_freq_id;
-		}
-
-		public String getMax_frequency() {
-			return max_frequency;
-		}
-
-		public void setMax_frequency(String max_frequency) {
-			this.max_frequency = max_frequency;
-		}
-
-		public ArrayList<ProcessorFrequency> getmFqList() {
-			return mFqList;
-		}
-
-		public void setmFqList(ArrayList<ProcessorFrequency> mFqList) {
-			this.mFqList = mFqList;
-		}
-
-		public Menu getmMenu() {
-			return mMenu;
-		}
-
-		public void setmMenu(Menu mMenu) {
-			this.mMenu = mMenu;
-		}
-
-		public int getSched_active() {
-			return sched_active;
-		}
-
-		public void setSched_active(int sched_active) {
-			this.sched_active = sched_active;
-		}
-
-		public String[] getSched_table() {
-			return sched_table;
-		}
-
-		public void setSched_table(String[] sched_table) {
-			this.sched_table = sched_table;
-		}
-
-		public String getTime_in_state() {
-			return time_in_state;
-		}
-
-		public void setTime_in_state(String time_in_state) {
-			this.time_in_state = time_in_state;
-		}
-
-		public String getUv_values() {
-			return uv_values;
-		}
-
-		public void setUv_values(String uv_values) {
-			this.uv_values = uv_values;
-		}
-	}
-
 	// COMMAND STRINGS
 	protected static final String 	C_FREQUENCY_VOLTAGE_TABLE = "cat /sys/devices/system/cpu/cpu0/cpufreq/frequency_voltage_table";
 	protected static final String 	C_STATES_ENABLED = "cat /sys/devices/system/cpu/cpu0/cpufreq/states_enabled_table";
@@ -151,8 +53,18 @@ public class VoltageControl extends ExpandableListActivity {
 	protected static final int 		REFRESH = 0;
 	protected static final int 		WRONGKERNEL = 2;
 	
-	protected VoltageControlData data = new VoltageControlData(" ",
-			new ArrayList<ProcessorFrequency>(), 0);
+	private ExpandableListAdapter frequencyAdapter;
+	String max_freq;
+	protected int max_freq_id;
+	private String max_frequency = " ";
+	private ArrayList<ProcessorFrequency> mFqList = new ArrayList<ProcessorFrequency>();
+	@SuppressWarnings("unused")
+	private Menu mMenu;
+	private int sched_active = 0;
+	private String[] sched_table;
+	private Map<String, String> stock_voltages = new HashMap<String, String>();
+	private String time_in_state;
+	private String uv_values;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -193,9 +105,7 @@ public class VoltageControl extends ExpandableListActivity {
 			
 			@Override
 			public void onDrawerOpened() {
-				slideHandleButton.setBackgroundResource(R.drawable.tray_handle_tab);
-				
-				//slideHandleButton.
+				// slideHandleButton.setBackgroundResource(R.drawable.openarrow);
 			}
 		});
 
@@ -205,12 +115,12 @@ public class VoltageControl extends ExpandableListActivity {
 			public void onDrawerClosed() {
 				//if (getStates())
 					
-				 slideHandleButton.setBackgroundResource(R.drawable.tray_handle_tab);
+				// slideHandleButton.setBackgroundResource(R.drawable.closearrow);
 			}
 		});
 
-		data.setFrequencyAdapter(new FrequencyListAdapter(
-				this.getApplicationContext()));
+		frequencyAdapter = new FrequencyListAdapter(
+				this.getApplicationContext());
 
 		final Handler uIRefreshHandler = new Handler() {
 
@@ -222,16 +132,13 @@ public class VoltageControl extends ExpandableListActivity {
 					
 					
 					RelativeLayout rl = (RelativeLayout) findViewById(R.id.contentLayout);
-				
 					// getExpandableListView().getExpandableListAdapter().;
-					for (int i = 0; i < data.getmFqList().size(); i++) {
+					for (int i = 0; i < mFqList.size(); i++) {
 						RelativeLayout.LayoutParams rllp = new RelativeLayout.LayoutParams(
 								240,
 								RelativeLayout.LayoutParams.WRAP_CONTENT);
-						data.getmFqList().get(i).getCheckbox()
-								.setChecked(data.getmFqList().get(i).isenabled());
-						
-						
+						mFqList.get(i).getCheckbox()
+								.setChecked(mFqList.get(i).isenabled());
 						if ((i % 2) != 0) {
 							rllp.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
 							if (i > 1)
@@ -245,17 +152,12 @@ public class VoltageControl extends ExpandableListActivity {
 								rllp.addRule(RelativeLayout.BELOW, i - 2);
 
 						}
-						
-						View view = data.getmFqList().get(i).getCheckbox();
+
+						View view = mFqList.get(i).getCheckbox();
 						view.setId(i);
-						
 						rl.addView(view, i, rllp);
-						
+
 					}
-					View helptext = findViewById(R.id.sliderHelpText);
-					RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-					lp.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-					helptext.setLayoutParams(lp);
 					if (!getStates())
 						findViewById(R.id.SlidingDrawer).setVisibility(
 								View.GONE);
@@ -265,7 +167,7 @@ public class VoltageControl extends ExpandableListActivity {
 						@Override
 						public void onItemSelected(AdapterView<?> parent,
 								View arg1, int arg2, long arg3) {
-							data.setSched_active((int) parent.getSelectedItemId());
+							sched_active = (int) parent.getSelectedItemId();
 
 						}
 
@@ -278,7 +180,7 @@ public class VoltageControl extends ExpandableListActivity {
 						@Override
 						public void onItemSelected(AdapterView<?> parent,
 								View arg1, int arg2, long arg3) {
-							data.setMax_frequency(parent.getSelectedItem().toString());
+							max_frequency = parent.getSelectedItem().toString();
 						}
 
 						@Override
@@ -288,17 +190,17 @@ public class VoltageControl extends ExpandableListActivity {
 					freqSpinner.setOnItemSelectedListener(freqSpinnerOnSelect);
 					freqSpinner.setAdapter(adapterForFreqSpinner);
 					schedSpinner.setAdapter(adapterForSchedSpinner);
-					schedSpinner.setSelection(data.getSched_active());
+					schedSpinner.setSelection(sched_active);
 					schedSpinner
 							.setOnItemSelectedListener(schedSpinnerOnSelect);
-					((FrequencyListAdapter) data.getFrequencyAdapter())
-							.setFrequencies(data.getmFqList());
-					setListAdapter(data.getFrequencyAdapter());
+					((FrequencyListAdapter) frequencyAdapter)
+							.setFrequencies(mFqList);
+					setListAdapter(frequencyAdapter);
 					int i = 0;
 					while (freqSpinner.getCount() > i
-							&& !freqSpinner.getItemAtPosition(i).toString()
-									.contains(data.getMax_freq())) {
-						i++;
+							&& !freqSpinner.getItemAtPosition(i++).toString()
+									.equals(max_freq + " Mhz")) {
+					
 					}
 					// Toast.makeText(getBaseContext(), Integer.toString(i),
 					// Toast.LENGTH_LONG).show();
@@ -325,8 +227,8 @@ public class VoltageControl extends ExpandableListActivity {
 		};
 
 		final ProgressDialog spinnerDialog = ProgressDialog.show(this,
-				"Initializing...",
-				"Shh! I'm busy doing poorly written system checks now...", true);
+				"Initializing",
+				"I'm busy doing poorly written system checks now", true);
 		new Thread(new Runnable() {
 
 			public void run() {
@@ -341,52 +243,52 @@ public class VoltageControl extends ExpandableListActivity {
 					if (tester == "") {
 						uIRefreshHandler.sendEmptyMessage(WRONGKERNEL);
 					} else {
-						FrequencyListAdapter.getfrequency_voltage_table();
+						getfrequency_voltage_table();
 						String[] freq_table = gettime_in_state();
 						getfreq_table(tester, freq_table);
 						getStates();
-							
-						 try {
-		                        OutputStreamWriter out = new OutputStreamWriter(openFileOutput(
-		                                "sched.sh", 0));
-		                        out.write("# Set \"$1\" scheduler for stl, bml and mmc\nfor i in `ls /sys/block/stl*` /sys/block/bml* /sys/block/mmcblk*\ndo\necho \"$1\" > $i/queue/scheduler\ndone");
-		                        out.close();
-		                    } catch (java.io.IOException e) {
-		                    }
-		                    ShellInterface.runCommand("chmod 777 /data/data/com.darekxan.voltagecontrol/files/sched.sh");
+						try {
+	                        OutputStreamWriter out = new OutputStreamWriter(openFileOutput(
+	                                "sched.sh", 0));
+	                        out.write("#!/system/bin/sh\n# Set \"$1\" scheduler for stl, bml and mmc\nfor i in `ls /sys/block/stl*` /sys/block/bml* /sys/block/mmcblk*\ndo\necho \"$1\" > $i/queue/scheduler\ndone");
+	                        out.close();
+	                    } catch (java.io.IOException e) {
+	                    }
+	                    ShellInterface.runCommand("chmod 777 /data/data/com.darekxan.voltagecontrol/files/sched.sh");
+
 						
 						adapterForFreqSpinner
 								.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
-						for (int i = 0; i < data.getmFqList().size(); i++) {
-							adapterForFreqSpinner.add(String.valueOf(data.getmFqList()
+						for (int i = 0; i < mFqList.size(); i++) {
+							adapterForFreqSpinner.add(String.valueOf(mFqList
 									.get(i).getValue()) + " Mhz");
 						}
 
-						data.setMax_freq(ShellInterface
-								.getProcessOutput(C_SCALING_MAX_FREQ));
-						if (data.getMax_freq() == null) {
-							data.setMax_freq(new String(""));
+						max_freq = ShellInterface
+								.getProcessOutput(C_SCALING_MAX_FREQ);
+						if (max_freq == null) {
+							max_freq = new String("");
 						}
-						if (data.getMax_freq().equals("")) {
-							data.getMax_freq().concat("0 0");
+						if (max_freq.equals("")) {
+							max_freq.concat("0 0");
 						}
-						data.setMax_freq(data.getMax_freq().substring(0, data.getMax_freq().length() - 4));
+						max_freq = max_freq.substring(0, max_freq.length() - 4);
 						adapterForSchedSpinner
 								.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 						String schedulers = ShellInterface
 								.getProcessOutput("cat /sys/block/mmc"
 										+ "blk0/queue/scheduler");
-						data.setSched_table(schedulers.split(" "));
+						sched_table = schedulers.split(" ");
 
-						for (int i2 = 0; i2 < data.getSched_table().length; i2++) {
-							if (data.getSched_table()[i2].contains("[")) {
-								data.setSched_active(i2);
-								data.getSched_table()[i2] = data.getSched_table()[i2].substring(1,
-										data.getSched_table()[i2].length() - 1);
+						for (int i2 = 0; i2 < sched_table.length; i2++) {
+							if (sched_table[i2].contains("[")) {
+								sched_active = i2;
+								sched_table[i2] = sched_table[i2].substring(1,
+										sched_table[i2].length() - 1);
 							}
 							;
-							adapterForSchedSpinner.add(data.getSched_table()[i2]);
+							adapterForSchedSpinner.add(sched_table[i2]);
 						}
 						uIRefreshHandler.sendEmptyMessage(REFRESH);
 					}
@@ -399,20 +301,20 @@ public class VoltageControl extends ExpandableListActivity {
 
 			private void getfreq_table(String tester, String[] freq_table) {
 				String[] uv_table;
-				data.setUv_values(tester);
-				if (data.getUv_values() == null) {
-					data.setUv_values(new String(""));
+				uv_values = tester;
+				if (uv_values == null) {
+					uv_values = new String("");
 				}
-				if (data.getUv_values().equals("")) {
+				if (uv_values.equals("")) {
 					for (int i = 0; i < freq_table.length; i += 2) {
-						data.getmFqList().add(new ProcessorFrequency(Integer
+						mFqList.add(new ProcessorFrequency(Integer
 								.parseInt(freq_table[i]) / 1000, 0,
 								new CheckBox(getBaseContext())));
 					}
 				} else {
-					uv_table = data.getUv_values().split(" ");
+					uv_table = uv_values.split(" ");
 					for (int i = 0; i < freq_table.length; i += 2) {
-						data.getmFqList().add(new ProcessorFrequency(Integer
+						mFqList.add(new ProcessorFrequency(Integer
 								.parseInt(freq_table[i]) / 1000,
 								Integer.parseInt(uv_table[i / 2]),
 								new CheckBox(getBaseContext())));
@@ -422,20 +324,60 @@ public class VoltageControl extends ExpandableListActivity {
 			}
 
 			private String[] gettime_in_state() {
-				data.setTime_in_state(ShellInterface
-						.getProcessOutput(C_TIME_IN_STATE));
+				time_in_state = ShellInterface
+						.getProcessOutput(C_TIME_IN_STATE);
 				// not needed anymore?
-				if (data.getTime_in_state() == null) {
-					data.setTime_in_state(new String(""));
+				if (time_in_state == null) {
+					time_in_state = new String("");
 				}
-				if (data.getTime_in_state().equals("")) {
-					data.getTime_in_state().concat("0 0");
+				if (time_in_state.equals("")) {
+					time_in_state.concat("0 0");
 				}
-				String[] freq_table = data.getTime_in_state().split(" ");
+				String[] freq_table = time_in_state.split(" ");
 				return freq_table;
 			}
 
-		
+			private void getfrequency_voltage_table() {
+				String frequency_voltage_table = ShellInterface
+						.getProcessOutput(C_FREQUENCY_VOLTAGE_TABLE);
+				if (frequency_voltage_table.equals("")) {
+					stock_voltages.put("100", "950");
+					stock_voltages.put("200", "950");
+					stock_voltages.put("400", "1050");
+					stock_voltages.put("800", "1200");
+					stock_voltages.put("1000", "1275");
+					stock_voltages.put("1120", "1300");
+					stock_voltages.put("1200", "1300");
+				} else {
+					String[] tfrequency_voltage_table = frequency_voltage_table
+							.split(" ");
+					String[] frequency_table = new String[20];
+					String[] voltage_table = new String[20];
+					int j = 0;
+					// Toast.makeText(getApplicationContext(),
+					// tfrequency_voltage_table[0],
+					// Toast.LENGTH_LONG).show();
+					for (int i = 0; i < tfrequency_voltage_table.length; i += 3) {
+
+						frequency_table[j] = String
+								.valueOf(tfrequency_voltage_table[i]);
+						voltage_table[j] = String
+								.valueOf(tfrequency_voltage_table[i + 1]);
+						stock_voltages.put(
+								String.valueOf(tfrequency_voltage_table[i]
+										.subSequence(
+												0,
+												tfrequency_voltage_table[i]
+														.length() - 3)),
+								String.valueOf(tfrequency_voltage_table[i + 1]));
+						// Log.d("VC", frequency_table[j]+ ": "+
+						// voltage_table[j]);
+						j++;
+					}
+					// stock_voltages.put("100", "950");
+
+				}
+			}
 		}).start();
 
 	}
@@ -443,7 +385,7 @@ public class VoltageControl extends ExpandableListActivity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Hold on to this
-		data.setmMenu(menu);
+		mMenu = menu;
 		MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.layout.menu, menu);
 
@@ -488,11 +430,11 @@ public class VoltageControl extends ExpandableListActivity {
 				.getProcessOutput(C_STATES_ENABLED);
 		try {
 			String[] states_enabled_table = states_enabled_table_tmp.split(" ");
-			for (int i = 0; i < data.getmFqList().size(); i++) {
+			for (int i = 0; i < mFqList.size(); i++) {
 				if (states_enabled_table[i].equals("1"))
-					data.getmFqList().get(i).isenabled(Boolean.TRUE);
+					mFqList.get(i).isenabled(Boolean.TRUE);
 				else
-					data.getmFqList().get(i).isenabled(Boolean.FALSE);
+					mFqList.get(i).isenabled(Boolean.FALSE);
 	
 			}
 		} catch (Exception e) {
@@ -506,14 +448,14 @@ public class VoltageControl extends ExpandableListActivity {
 		
 		ShellInterface
 				.runCommand("/data/data/com.darekxan.voltagecontrol/files/sched.sh "
-						+ data.getSched_table()[data.getSched_active()]);
+						+ sched_table[sched_active]);
 		
 		ShellInterface
 				.runCommand("echo 1 > /sys/devices/system/cpu/cpu0/cpufreq/update_states");
 		ShellInterface
-				.runCommand("echo "
-						+ data.getMax_frequency().split(" ")[0]
-						+ "000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq");
+				.runCommand("echo \""
+						+ max_frequency.split(" ")[0]
+						+ "000\" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq");
 		setStates();
 	}
 
@@ -521,8 +463,8 @@ public class VoltageControl extends ExpandableListActivity {
 		StringBuilder command = new StringBuilder();
 		command.append("echo \"");
 	
-		for (int i = 0; i < data.getmFqList().size(); i++) {
-			if (data.getmFqList().get(i).isenabled())
+		for (int i = 0; i < mFqList.size(); i++) {
+			if (mFqList.get(i).isenabled())
 				command.append("1 ");
 			else
 				command.append("0 ");
@@ -535,8 +477,8 @@ public class VoltageControl extends ExpandableListActivity {
 	
 		StringBuilder command = new StringBuilder();
 		command.append("echo \"");
-		for (int i = 0; i < data.getmFqList().size(); i++) {
-			command.append(data.getmFqList().get(i).getUv() + " ");
+		for (int i = 0; i < mFqList.size(); i++) {
+			command.append(mFqList.get(i).getUv() + " ");
 		}
 		command.append("\" > /sys/devices/system/cpu/cpu0/cpufreq/UV_mV_table");//
 	
@@ -559,22 +501,27 @@ public class VoltageControl extends ExpandableListActivity {
 		;
 	}
 
-
+	private Object getCommandOutput(String command) {
+		try {
+			return ShellInterface.getProcessOutput(command);
+		} catch (Exception e) {
+			return Boolean.FALSE;
+		}
+	}
 
 	private void saveBootSettings() {
 		try {
 			OutputStreamWriter out = new OutputStreamWriter(openFileOutput(
 					"S_volt_scheduler", 0));
-			String tmp = "#!/system/bin/sh\n#set UV\n"
+			String tmp = "#!/system/bin/sh\n\nLOG_FILE=/data/volt_scheduler.log\nrm -Rf $LOG_FILE\n\necho \"Starting Insanity Volt Scheduler $( date +\"%m-%d-%Y %H:%M:%S\" )\" | tee -a $LOG_FILE;\n\necho \"Set UV\" | tee -a $LOG_FILE; \n"
 					+ build_uv_command()
-					+ "\necho "
-					+ data.getMax_frequency().split(" ")[0]
-					+ "000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq"
-					+ "\n#select enabled states\n"
+					+ "\necho \"\"\necho \"---------------\"\n\necho \"Set MAX Scaling Frequency\" | tee -a $LOG_FILE; \necho \""
+					+ max_frequency.split(" ")[0]
+					+ "000\" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq\necho \"\"\necho \"---------------\"\n\necho \"Select Enabled States\" | tee -a $LOG_FILE; \n"
 					+ build_states_enabled_command()
-					+ "\n#set scheduler for stl, bml and mmc\nfor i in `ls /sys/block/stl*` /sys/block/bml* /sys/block/mmcblk*\ndo\necho \""
-					+ data.getSched_table()[data.getSched_active()]
-					+ "\" > $i/queue/scheduler\ndone\n";
+					+ "\necho \"\"\necho \"---------------\"\n\necho \"Set Scheduler for stl, bml and mmc\" | tee -a $LOG_FILE; \n    \nfor i in `ls /sys/block/stl*` /sys/block/bml* /sys/block/mmcblk* ; do\n\techo \""
+					+ sched_table[sched_active]
+					+ "\" > $i/queue/scheduler;\n\techo \"$i/queue/scheduler\";\n\techo \"---------------\";\ndone;\n\necho \"Insanity Volt Scheduler finished at $( date +\"%m-%d-%Y %H:%M:%S\" )\" | tee -a $LOG_FILE;\n";
 			out.write(tmp);
 			out.close();
 		} catch (java.io.IOException e) {
@@ -669,7 +616,7 @@ public class VoltageControl extends ExpandableListActivity {
 						finish();
 					}
 				});
-		builder.setPositiveButton("Do it for me!",
+		/*builder.setPositiveButton("Do it for me!",
 				new DialogInterface.OnClickListener() {
 
 					@Override
@@ -679,7 +626,7 @@ public class VoltageControl extends ExpandableListActivity {
 						finish();
 						
 					}
-				});
+				});*/
 		builder.setTitle("No root available");
 		builder.setCancelable(false);
 		AlertDialog alert = builder.create();
@@ -736,14 +683,14 @@ public class VoltageControl extends ExpandableListActivity {
 
 					@Override
 					public void onClick(DialogInterface dialog, int id) {
-						String url = "http://forum.xda-developers.com/showthread.php?t=829731";
+						String url = "http://forum.xda-developers.com/showthread.php?t=965103";
 						Intent i = new Intent(Intent.ACTION_VIEW);
 						i.setData(Uri.parse(url));
 						startActivity(i);
 						finish();
 					}
 				});
-		builder.setPositiveButton("Do it for me!",
+		/*builder.setPositiveButton("Do it for me!",
 				new DialogInterface.OnClickListener() {
 
 					@Override
@@ -752,7 +699,7 @@ public class VoltageControl extends ExpandableListActivity {
 						.show();
 						finish();
 					}
-				});
+				});*/
 		builder.setTitle("Unsupported kernel detected");
 		builder.setCancelable(false);
 		AlertDialog alert = builder.create();
